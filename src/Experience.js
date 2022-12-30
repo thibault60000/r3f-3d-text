@@ -1,43 +1,48 @@
 import {
   Center,
   Text3D,
+  useGLTF,
   OrbitControls,
   useMatcapTexture,
 } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { Perf } from "r3f-perf";
+// import { Perf } from "r3f-perf";
 import { useState, useRef } from "react";
 import { useControls } from "leva";
 
 // https://github.com/emmelleppi/normal-maps
 // https://github.com/emmelleppi/matcaps
 export default function Experience() {
-  const [torusGeometry, setTorusGeometry] = useState();
+  const [piouGeometry, setPiouGeometry] = useState();
   const [material, setMaterial] = useState();
 
-  const { donutsNumber } = useControls({
-    donutsNumber: { value: 60, min: 1, max: 100 },
+  const { nodes, materials } = useGLTF("/pioubleu.glb");
+  console.log("piou", nodes, materials);
+
+  const { piouNumber } = useControls({
+    piouNumber: { value: 60, min: 1, max: 200 },
   });
 
-  const donuts = useRef([]);
-  const donutsGroup = useRef();
+  const pious = useRef([]);
+  const piouGroup = useRef();
 
   const [matcapTexture] = useMatcapTexture("1A2461_3D70DB_2C3C8F_2C6CAC", 256);
 
-  const tempArray = [...Array(donutsNumber)];
+  const tempArray = [...Array(piouNumber)];
 
   useFrame((state, delta) => {
-    for (const donut of donutsGroup.current.children) {
-      donut.rotation.x += delta * 0.1;
-      donut.rotation.y += delta * 0.1;
+    for (const piou of piouGroup.current.children) {
+      piou.rotation.x += delta * 0.1;
+      piou.rotation.y += delta * 0.1;
     }
   });
   return (
     <>
-      <Perf position='top-left' />
+      {/* <Perf position='top-left' /> */}
       <OrbitControls makeDefault />
 
-      <torusGeometry ref={setTorusGeometry} args={[1, 0.6, 16, 32]} />
+      <ambientLight intensity={0.5} />
+
       <meshMatcapMaterial ref={setMaterial} matcap={matcapTexture} />
 
       <Center>
@@ -56,7 +61,7 @@ export default function Experience() {
           Homepilot
         </Text3D>
       </Center>
-      <group ref={donutsGroup}>
+      <group ref={piouGroup} dispose={null}>
         {tempArray.map((value, index) => {
           const position = [
             (Math.random() - 0.5) * 10,
@@ -74,19 +79,21 @@ export default function Experience() {
 
           return (
             <mesh
-              ref={(donut) => {
-                donuts.current[index] = donut;
+              ref={(piou) => {
+                pious.current[index] = piou;
               }}
-              geometry={torusGeometry}
+              geometry={nodes.Plane.geometry}
               material={material}
               key={index}
               position={position}
               scale={scale}
               rotation={rotation}
-            ></mesh>
+            />
           );
         })}
       </group>
     </>
   );
 }
+
+useGLTF.preload("./pioubleu.glb");
